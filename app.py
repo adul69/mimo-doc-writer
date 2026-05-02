@@ -107,7 +107,7 @@ def _format_classes(classes: list) -> str:
 def _format_functions(funcs: list) -> str:
     if not funcs:
         return "- No functions detected"
-    return "\n".join([f"- `{f['name']}({f['params'][:50]})` - {f['file']}" for f in funcs])
+    return "\n".join([f"- `{f['name']}()` - {f['file']}" for f in funcs])
 
 def _format_deps(deps: list) -> str:
     if not deps:
