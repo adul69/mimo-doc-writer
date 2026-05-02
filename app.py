@@ -12,7 +12,7 @@ app = Flask(__name__)
 # ─── Config ───
 MIMO_API_KEY = os.getenv("MIMO_API_KEY", "")
 MIMO_API_URL = os.getenv("MIMO_API_URL", "https://api.xiaomimimo.com/v1")
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "..", "tmp", "uploads")
+UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Initialize analyzer
