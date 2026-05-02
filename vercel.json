@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
+  ],
+  "env": {
+    "MIMO_API_KEY": "sk-sx5305wu8bb3usteoszw6yuhcl9474jmhxhp1vxef455rwyg",
+    "MIMO_API_URL": "https://api.xiaomimimo.com/v1"
+  }
+}
