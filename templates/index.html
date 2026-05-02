@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiMo Doc Writer - AI Documentation Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #e5e5e5;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff6b35, #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #ff6b35;
+        }
+        
+        /* Main Content */
+        .main {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+        
+        /* Input Panel */
+        .input-panel {
+            background: #111;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #222;
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .input-field:focus {
+            border-color: #ff6b35;
+        }
+        
+        .input-field::placeholder {
+            color: #666;
+        }
+        
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .upload-text {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        /* Doc Type Buttons */
+        .doc-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .doc-type-btn {
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .doc-type-btn:hover, .doc-type-btn.active {
+            border-color: #ff6b35;
+            color: #ff6b35;
+            background: rgba(255, 107, 53, 0.1);
+        }
+        
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Output Panel */
+        .output-panel {
+            background: #111;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #222;
+            min-height: 600px;
+        }
+        
+        .output-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .output-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .copy-btn {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            border-color: #ff6b35;
+            color: #ff6b35;
+        }
+        
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 20px;
+            padding: 16px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Documentation Output */
+        .doc-output {
+            background: #0a0a0a;
+            border-radius: 10px;
+            padding: 24px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        
+        .doc-output h1, .doc-output h2, .doc-output h3 {
+            color: #fff;
+            margin: 20px 0 10px;
+        }
+        
+        .doc-output h1 { font-size: 28px; }
+        .doc-output h2 { font-size: 22px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+        .doc-output h3 { font-size: 18px; color: #ff6b35; }
+        
+        .doc-output p { margin: 10px 0; line-height: 1.6; }
+        
+        .doc-output code {
+            background: #1a1a1a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .doc-output pre {
+            background: #1a1a1a;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        
+        .doc-output ul, .doc-output ol {
+            margin: 10px 0 10px 24px;
+        }
+        
+        .doc-output li { margin: 6px 0; }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            gap: 20px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #222;
+            border-top-color: #ff6b35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        /* Steps */
+        .steps {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            flex: 1;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0.5;
+        }
+        
+        .step.active {
+            opacity: 1;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+        
+        .step-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+        
+        .step-name {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        @media (max-width: 900px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">📝</div>
+                <span class="logo-text">MiMo Doc Writer</span>
+            </div>
+            <span class="badge">Powered by MiMo AI</span>
+        </header>
+        
+        <div class="main">
+            <!-- Input Panel -->
+            <div class="input-panel">
+                <h2 class="panel-title">Input</h2>
+                
+                <!-- GitHub URL -->
+                <div class="input-group">
+                    <label class="input-label">GitHub Repository URL</label>
+                    <input type="text" id="githubUrl" class="input-field" placeholder="https://github.com/user/repo">
+                </div>
+                
+                <div style="text-align: center; color: #666; margin: 10px 0;">— OR —</div>
+                
+                <!-- File Upload -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Upload files or ZIP folder</div>
+                    <input type="file" id="fileInput" multiple accept=".zip,.py,.js,.ts,.java,.go,.rs,.rb,.php" style="display:none">
+                </div>
+                
+                <!-- Doc Type -->
+                <div class="input-group">
+                    <label class="input-label">Documentation Type</label>
+                    <div class="doc-types">
+                        <button class="doc-type-btn active" data-type="full">Full Docs</button>
+                        <button class="doc-type-btn" data-type="readme">README</button>
+                        <button class="doc-type-btn" data-type="api">API Reference</button>
+                        <button class="doc-type-btn" data-type="architecture">Architecture</button>
+                    </div>
+                </div>
+                
+                <!-- Generate Button -->
+                <button id="generateBtn" class="generate-btn">
+                    Generate Documentation
+                </button>
+            </div>
+            
+            <!-- Output Panel -->
+            <div class="output-panel">
+                <div class="output-header">
+                    <h2 class="output-title">Generated Documentation</h2>
+                    <button class="copy-btn" id="copyBtn">Copy Markdown</button>
+                </div>
+                
+                <!-- Pipeline Steps -->
+                <div class="steps">
+                    <div class="step" id="step1">
+                        <div class="step-num">1</div>
+                        <div class="step-name">SCAN</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-num">2</div>
+                        <div class="step-name">UNDERSTAND</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-num">3</div>
+                        <div class="step-name">GENERATE</div>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="stats" id="stats" style="display:none">
+                    <div class="stat">
+                        <div class="stat-value" id="statFiles">0</div>
+                        <div class="stat-label">Files</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statClasses">0</div>
+                        <div class="stat-label">Classes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statFunctions">0</div>
+                        <div class="stat-label">Functions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statDeps">0</div>
+                        <div class="stat-label">Dependencies</div>
+                    </div>
+                </div>
+                
+                <!-- Output -->
+                <div class="doc-output" id="docOutput">
+                    <div style="text-align:center; color:#666; padding:100px 0;">
+                        <div style="font-size:48px; margin-bottom:16px;">📄</div>
+                        <div>Upload a repository or paste a GitHub URL to get started</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedDocType = 'full';
+        let uploadedFiles = [];
+        
+        // Doc type selection
+        document.querySelectorAll('.doc-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedDocType = btn.dataset.type;
+            });
+        });
+        
+        // File upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ff6b35';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#333';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#333';
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        function handleFiles(files) {
+            uploadedFiles = Array.from(files);
+            const names = uploadedFiles.map(f => f.name).join(', ');
+            uploadArea.innerHTML = `
+                <div class="upload-icon">✅</div>
+                <div class="upload-text">${uploadedFiles.length} file(s) selected</div>
+            `;
+        }
+        
+        // Generate documentation
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const githubUrl = document.getElementById('githubUrl').value.trim();
+            
+            if (!githubUrl && uploadedFiles.length === 0) {
+                alert('Please provide a GitHub URL or upload files');
+                return;
+            }
+            
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            
+            // Reset steps
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('docOutput').innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Processing...</div></div>';
+            
+            try {
+                // Animate steps
+                setTimeout(() => document.getElementById('step1').classList.add('active'), 500);
+                setTimeout(() => document.getElementById('step2').classList.add('active'), 1500);
+                setTimeout(() => document.getElementById('step3').classList.add('active'), 2500);
+                
+                let response;
+                
+                if (githubUrl) {
+                    response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ github_url: githubUrl, doc_type: selectedDocType })
+                    });
+                } else {
+                    const formData = new FormData();
+                    uploadedFiles.forEach(f => formData.append('files', f));
+                    formData.append('doc_type', selectedDocType);
+                    
+                    response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Show stats
+                const stats = document.getElementById('stats');
+                stats.style.display = 'flex';
+                document.getElementById('statFiles').textContent = data.analysis.files_scanned;
+                document.getElementById('statClasses').textContent = data.analysis.classes_found;
+                document.getElementById('statFunctions').textContent = data.analysis.functions_found;
+                document.getElementById('statDeps').textContent = data.analysis.dependencies.length;
+                
+                // Render markdown
+                document.getElementById('docOutput').innerHTML = marked.parse(data.documentation);
+                document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+                
+            } catch (error) {
+                document.getElementById('docOutput').innerHTML = `<div style="color:#ff4444; padding:20px;">Error: ${error.message}</div>`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Generate Documentation';
+        });
+        
+        // Copy button
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const text = document.getElementById('docOutput').innerText;
+            navigator.clipboard.writeText(text);
+            const btn = document.getElementById('copyBtn');
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy Markdown', 2000);
+        });
+    </script>
+</body>
+</html>
