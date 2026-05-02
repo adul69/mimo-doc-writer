@@ -48,9 +48,7 @@ class CodeAnalyzer:
         
         for root, dirs, files in os.walk(path):
             # Skip hidden & common non-essential dirs
-            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in [
-                'node_modules', '__pycache__', 'venv', '.git', 'dist', 'build'
-            ]]
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__', 'venv', '.git', 'dist', 'build']]
             
             for file in files:
                 filepath = os.path.join(root, file)
