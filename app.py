@@ -1,4 +1,5 @@
 import os
+import shutil
 import json
 import requests
 from flask import Flask, render_template, request, jsonify
@@ -180,17 +181,39 @@ def _save_uploaded_files(files) -> str:
     return temp_dir
 
 def _clone_github(url: str) -> str:
-    """Clone GitHub repository"""
-    import subprocess
+    """Download GitHub repository as ZIP"""
     import tempfile
+    import zipfile
+    import io
     
-    temp_dir = tempfile.mkdtemp(dir=UPLOAD_FOLDER)
-    result = subprocess.run(
-        ["git", "clone", "--depth=1", url, temp_dir],
-        capture_output=True, text=True, timeout=60
-    )
+    # Convert GitHub URL to ZIP download URL
+    # https://github.com/user/repo -> https://github.com/user/repo/archive/refs/heads/main.zip
+    zip_url = url.rstrip('/')
+    if not zip_url.endswith('.zip'):
+        zip_url = zip_url + '/archive/refs/heads/main.zip'
     
-    return temp_dir if result.returncode == 0 else None
+    try:
+        response = requests.get(zip_url, timeout=60)
+        response.raise_for_status()
+        
+        temp_dir = tempfile.mkdtemp(dir=UPLOAD_FOLDER)
+        
+        with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
+            # Get the root folder name in ZIP
+            root_folder = zip_ref.namelist()[0].split('/')[0]
+            zip_ref.extractall(temp_dir)
+        
+        # Move files from root folder to temp_dir
+        extracted_dir = os.path.join(temp_dir, root_folder)
+        if os.path.exists(extracted_dir):
+            for item in os.listdir(extracted_dir):
+                shutil.move(os.path.join(extracted_dir, item), temp_dir)
+            os.rmdir(extracted_dir)
+        
+        return temp_dir
+    except Exception as e:
+        print(f"Error downloading repo: {e}")
+        return None
 
 def _get_prompt(doc_type: str) -> str:
     """Get documentation prompt based on type"""
