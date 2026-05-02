@@ -121,39 +121,42 @@ def index():
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     """Full analysis pipeline: SCAN → UNDERSTAND → GENERATE"""
-    
-    # Handle file upload or GitHub URL
-    if 'files' in request.files:
-        # File upload mode
-        files = request.files.getlist('files')
-        project_path = _save_uploaded_files(files)
-    elif request.json and request.json.get('github_url'):
-        # GitHub clone mode
-        project_path = _clone_github(request.json['github_url'])
-    else:
-        return jsonify({"error": "No files or GitHub URL provided"}), 400
-    
-    if not project_path:
-        return jsonify({"error": "Failed to process input"}), 400
-    
-    # STEP 1: SCAN & STEP 2: UNDERSTAND
-    context = analyzer.prepare_for_ai(project_path)
-    
-    # STEP 3: GENERATE documentation
-    doc_type = request.form.get('doc_type', 'full')
-    prompt = _get_prompt(doc_type)
-    documentation = call_mimo_ai(prompt, context)
-    
-    return jsonify({
-        "documentation": documentation,
-        "analysis": {
-            "files_scanned": context["scan"]["total_files"],
-            "languages": context["scan"]["languages"],
-            "classes_found": len(context["understand"]["classes"]),
-            "functions_found": len(context["understand"]["functions"]),
-            "dependencies": context["understand"]["dependencies"]
-        }
-    })
+    try:
+        # Handle file upload or GitHub URL
+        if 'files' in request.files:
+            # File upload mode
+            files = request.files.getlist('files')
+            project_path = _save_uploaded_files(files)
+            doc_type = request.form.get('doc_type', 'full')
+        elif request.is_json and request.json.get('github_url'):
+            # GitHub clone mode
+            project_path = _clone_github(request.json['github_url'])
+            doc_type = request.json.get('doc_type', 'full')
+        else:
+            return jsonify({"error": "No files or GitHub URL provided"}), 400
+        
+        if not project_path:
+            return jsonify({"error": "Failed to process input"}), 400
+        
+        # STEP 1: SCAN & STEP 2: UNDERSTAND
+        context = analyzer.prepare_for_ai(project_path)
+        
+        # STEP 3: GENERATE documentation
+        prompt = _get_prompt(doc_type)
+        documentation = call_mimo_ai(prompt, context)
+        
+        return jsonify({
+            "documentation": documentation,
+            "analysis": {
+                "files_scanned": context["scan"]["total_files"],
+                "languages": context["scan"]["languages"],
+                "classes_found": len(context["understand"]["classes"]),
+                "functions_found": len(context["understand"]["functions"]),
+                "dependencies": context["understand"]["dependencies"]
+            }
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def _save_uploaded_files(files) -> str:
     """Save uploaded files to temp directory"""
