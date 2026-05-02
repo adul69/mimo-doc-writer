@@ -63,7 +63,12 @@ Focus on explaining the reasoning behind code, not just describing it."""
         result = response.json()
         return result["choices"][0]["message"]["content"]
     except Exception as e:
-        return f"# Error\n\nFailed to generate documentation: {str(e)}"
+        # Return detailed error for debugging
+        try:
+            error_detail = response.text if response else str(e)
+        except:
+            error_detail = str(e)
+        return f"# Error\n\nFailed to generate documentation: {error_detail}"
 
 def _demo_response(context: dict) -> str:
     """Demo response when no API key"""
