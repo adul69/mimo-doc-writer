@@ -6,6 +6,15 @@
 [![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)](https://flask.palletsprojects.com)
 [![MiMo AI](https://img.shields.io/badge/MiMo-AI-orange.svg)](https://mimo.xiaomi.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-purple.svg)](https://mimo-doc-writer.vercel.app/)
+
+---
+
+## 🌐 Live Demo
+
+**🔗 [Try MiMo Doc Writer](https://mimo-doc-writer.vercel.app/)**
+
+Upload a repository or paste a GitHub URL to see MiMo AI in action!
 
 ---
 
