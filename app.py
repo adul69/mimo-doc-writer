@@ -43,7 +43,7 @@ Focus on explaining the reasoning behind code, not just describing it."""
     }
     
     payload = {
-        "model": "MiMo-V2.5",
+        "model": "mimo-v2.5",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"{prompt}\n\nProject Context:\n{json.dumps(context, indent=2)}"}
