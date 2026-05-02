@@ -2,14 +2,12 @@ import os
 import json
 import requests
 from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
 from dotenv import load_dotenv
 from core.analyzer import CodeAnalyzer
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
 
 # ─── Config ───
 MIMO_API_KEY = os.getenv("MIMO_API_KEY", "")
